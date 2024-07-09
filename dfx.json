@@ -1,0 +1,28 @@
+{
+    "canisters": {
+        "frontend-dsocial-next-development": {
+            "frontend": {
+                "entrypoint": "dist/index.html"
+            },
+            "source": [
+                "dist/"
+            ],
+            "type": "assets"
+        },
+        "frontend-dsocial-next-production": {
+            "frontend": {
+                "entrypoint": "dist/index.html"
+            },
+            "source": [
+                "dist/"
+            ],
+            "type": "assets"
+        }
+    },
+    "defaults": {
+        "build": {
+            "packtool": ""
+        }
+    },
+    "version": 1
+}
