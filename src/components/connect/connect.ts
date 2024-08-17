@@ -33,7 +33,7 @@ export const createClient = (whitelist?: string[]) => {
     const plugProvider = new CustomPlugWallet();
 
     const globalProviderConfig = {
-        appName: 'game-logger',
+        appName: 'Pokedbots Game',
         dev: false,
         autoConnect: true,
         host: getConnectHost(),

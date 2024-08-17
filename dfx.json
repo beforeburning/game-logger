@@ -1,15 +1,6 @@
 {
     "canisters": {
-        "frontend-dsocial-next-development": {
-            "frontend": {
-                "entrypoint": "dist/index.html"
-            },
-            "source": [
-                "dist/"
-            ],
-            "type": "assets"
-        },
-        "frontend-dsocial-next-production": {
+        "assets": {
             "frontend": {
                 "entrypoint": "dist/index.html"
             },
