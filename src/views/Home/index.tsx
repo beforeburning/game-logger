@@ -25,13 +25,15 @@ import { getTokenIdentifier, serializeTokenData } from './nft';
 import { idlFactory as nftInvitationCodeFactory } from './nft.did';
 import nftJson from './nft.json';
 
-// function getQueryParam(param) {
-//     const urlParams = new URLSearchParams(window.location.search);
-//     return urlParams.get(param);
-// }
+function getQueryParam(param) {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get(param);
+}
 
-// const iframeUrl = getQueryParam('iframe') || '';
-const iframeUrl = 'https://meklz-iyaaa-aaaah-aeboq-cai.icp0.io';
+const iframeUrl =
+    process.env.NODE_ENV === 'development'
+        ? getQueryParam('iframe') || 'http://127.0.0.1:5500/'
+        : 'https://meklz-iyaaa-aaaah-aeboq-cai.icp0.io';
 
 const Home = () => {
     const [open, setOpen] = useState<boolean>(false);
@@ -117,7 +119,10 @@ const Home = () => {
     const { isConnected, isInitializing, isConnecting } = useConnect({
         // 退出登录
         onDisconnect: () => {
-            console.log('onDisconnect');
+            postMessage({
+                title: 'onDisconnect',
+                value: true,
+            });
         },
         // 登录成功
         onConnect: async (connected: any) => {
@@ -139,47 +144,48 @@ const Home = () => {
             });
         }
         const from = principalToAccountHex(principal);
-
         const actor = await creator(nftInvitationCodeFactory, canisterid);
-        const ret = await actor.tokens_ext(from);
-        const tokens = ret.ok || [];
-        const arr = tokens.map((token) => {
-            const metadata = token[2];
-            const tokenIndex = token[0];
-
-            const str = serializeTokenData(
-                metadata,
-                getTokenIdentifier(canisterid, tokenIndex),
-                tokenIndex,
-                canisterid,
-            );
-
-            if (canisterid === 'jv55j-riaaa-aaaal-abvnq-cai') {
-                if (nftJson[1][str.index]) {
-                    str.metadata = nftJson[1][str.index];
+        try {
+            const ret = await actor.tokens_ext(from);
+            const tokens = ret.ok || [];
+            const arr = tokens.map((token) => {
+                const metadata = token[2];
+                const tokenIndex = token[0];
+                const str = serializeTokenData(
+                    metadata,
+                    getTokenIdentifier(canisterid, tokenIndex),
+                    tokenIndex,
+                    canisterid,
+                );
+                if (canisterid === 'jv55j-riaaa-aaaal-abvnq-cai') {
+                    if (nftJson[1][str.index]) {
+                        str.metadata = nftJson[1][str.index];
+                    }
                 }
+                return str;
+            });
+            if (canisterid === 'bzsui-sqaaa-aaaah-qce2a-cai') {
+                postMessage({
+                    title: 'nftListInit1',
+                    value: false,
+                });
+                postMessage({
+                    title: 'nftList1',
+                    value: arr,
+                });
             }
-            return str;
-        });
-        if (canisterid === 'bzsui-sqaaa-aaaah-qce2a-cai') {
-            postMessage({
-                title: 'nftListInit1',
-                value: false,
-            });
-            postMessage({
-                title: 'nftList1',
-                value: arr,
-            });
-        }
-        if (canisterid === 'jv55j-riaaa-aaaal-abvnq-cai') {
-            postMessage({
-                title: 'nftListInit2',
-                value: false,
-            });
-            postMessage({
-                title: 'nftList2',
-                value: arr,
-            });
+            if (canisterid === 'jv55j-riaaa-aaaal-abvnq-cai') {
+                postMessage({
+                    title: 'nftListInit2',
+                    value: false,
+                });
+                postMessage({
+                    title: 'nftList2',
+                    value: arr,
+                });
+            }
+        } catch (err) {
+            console.log(err);
         }
     };
 
@@ -209,9 +215,29 @@ const Home = () => {
         const handleMessage = (event) => {
             if (event.data === 'login-stoic') {
                 loginInit('stoic');
+
+                if (principal) {
+                    postMessage({
+                        title: 'principalId',
+                        value: principal,
+                    });
+                }
+                if (activeProvider && principal) {
+                    nftInit();
+                }
             }
             if (event.data === 'login-plug') {
                 loginInit('plug');
+
+                if (principal) {
+                    postMessage({
+                        title: 'principalId',
+                        value: principal,
+                    });
+                }
+                if (activeProvider && principal) {
+                    nftInit();
+                }
             }
             if (event.data === 'login-logout') {
                 disconnect();
@@ -297,12 +323,12 @@ const Home = () => {
                 </div>
 
                 <div className="absolute left-0 top-0 flex h-screen w-screen items-center justify-center overflow-hidden bg-[#150046]">
-                    <img
+                    {/* <img
                         className="absolute left-0 top-0 h-full w-full object-cover"
                         src={banner1Img}
                         alt=""
-                    />
-                    <div className="absolute left-0 top-0 h-full  w-full bg-[rgba(0,18,108,.60)]"></div>
+                    /> */}
+                    <div className="absolute left-0 top-0 h-full  w-full bg-[#101010]"></div>
 
                     <div className="absolute h-full w-[100%] items-center justify-center overflow-hidden">
                         <div className="relative mt-[50px] flex h-full w-full justify-between">
@@ -311,8 +337,8 @@ const Home = () => {
                                 id="iframeDom"
                                 src={iframeUrl}
                                 className="h-full w-full"
-                                webkitallowfullscreen
-                                mozallowfullscreen
+                                allow="fullscreen"
+                                sandbox="allow-same-origin allow-scripts allow-modals allow-popups allow-forms allow-presentation"
                             ></iframe>
                         </div>
                     </div>

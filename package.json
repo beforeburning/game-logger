@@ -8,13 +8,14 @@
     "scripts": {
         "dev": "vite --mode=development",
         "prod": "vite --mode=production",
-        "build": "",
+        "build": "tsc && vite build --mode=development",
         "build:development": "tsc && vite build --mode=development",
         "build:production": "tsc && vite build --mode=production",
         "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
         "preview": "vite preview",
         "report": "cross-env REPORT=true npm run build:production",
-        "prepare": "husky install"
+        "prepare": "husky install",
+        "update": "dfx deploy --network ic assets"
     },
     "dependencies": {
         "@ant-design/icons": "^5.2.5",
