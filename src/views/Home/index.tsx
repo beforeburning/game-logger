@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Modal } from 'antd';
+import { message, Modal } from 'antd';
 import { useConnect } from '@connect2ic/react';
+import copy from 'copy-to-clipboard';
 // Import Swiper styles
 import 'swiper/css';
 import 'swiper/css/pagination';
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { getActorCreatorByActiveProvider } from '@/components/connect/creator';
+import { isDevMode } from '@/utils/env';
 import { principalToAccountHex } from '@/utils/principals';
 import banner1Img from '@/assets/images/banner1.png';
 import banner2Img from '@/assets/images/banner2.png';
@@ -30,12 +32,13 @@ function getQueryParam(param) {
     return urlParams.get(param);
 }
 
-const iframeUrl =
-    process.env.NODE_ENV === 'development'
-        ? getQueryParam('iframe') || 'http://127.0.0.1:5500/'
-        : 'https://meklz-iyaaa-aaaah-aeboq-cai.icp0.io';
+const iframeUrl = isDevMode()
+    ? getQueryParam('iframe') || 'http://127.0.0.1:5500/'
+    : 'https://nq2dt-eyaaa-aaaai-qpf6q-cai.icp0.io/unity/index.html';
 
 const Home = () => {
+    const [messageApi, contextHolder] = message.useMessage();
+
     const [open, setOpen] = useState<boolean>(false);
     const [modelData, setModelData] = useState<string>('');
 
@@ -119,6 +122,7 @@ const Home = () => {
     const { isConnected, isInitializing, isConnecting } = useConnect({
         // 退出登录
         onDisconnect: () => {
+            console.log('onDisconnect');
             postMessage({
                 title: 'onDisconnect',
                 value: true,
@@ -173,6 +177,7 @@ const Home = () => {
                     title: 'nftList1',
                     value: arr,
                 });
+                console.log('nftList1');
             }
             if (canisterid === 'jv55j-riaaa-aaaal-abvnq-cai') {
                 postMessage({
@@ -193,6 +198,7 @@ const Home = () => {
         if (!activeProvider) {
             return;
         }
+
         const creator: ActorCreator = await getActorCreatorByActiveProvider(activeProvider);
 
         getList(creator, 'bzsui-sqaaa-aaaah-qce2a-cai');
@@ -211,6 +217,14 @@ const Home = () => {
         iframeDom.contentWindow.postMessage(JSON.stringify(data), iframeUrl);
     };
 
+    const copyFn = (text) => {
+        copy(text);
+        messageApi.open({
+            type: 'success',
+            content: 'Copy Succeeded',
+        });
+    };
+
     useEffect(() => {
         const handleMessage = (event) => {
             if (event.data === 'login-stoic') {
@@ -226,6 +240,7 @@ const Home = () => {
                     nftInit();
                 }
             }
+
             if (event.data === 'login-plug') {
                 loginInit('plug');
 
@@ -239,8 +254,18 @@ const Home = () => {
                     nftInit();
                 }
             }
+
             if (event.data === 'login-logout') {
                 disconnect();
+            }
+
+            if (typeof event.data === 'string' && event.data.includes('copy-text####')) {
+                const text = event.data.split('copy-text####')[1];
+
+                if (text) {
+                    console.log(text);
+                    copyFn(text);
+                }
             }
         };
 
@@ -296,6 +321,22 @@ const Home = () => {
 
     return (
         <>
+            {contextHolder}
+            {isDevMode() && (
+                <div className="fixed left-0 top-0 z-50 text-white">
+                    <button onClick={() => loginInit('stoic')}>stoic login</button>
+                    <button className="ml-3" onClick={() => loginInit('plug')}>
+                        plug login
+                    </button>
+                    <button className="ml-3" onClick={disconnect}>
+                        disconnect
+                    </button>
+                    <button className="ml-3" onClick={() => copyFn('xxx')}>
+                        copy test
+                    </button>
+                </div>
+            )}
+
             <div className="hide-scrollbar fixed left-0 top-0 h-screen w-screen overflow-y-scroll">
                 {/* <img
                     className="fixed left-0 top-0 h-full w-full object-cover"
